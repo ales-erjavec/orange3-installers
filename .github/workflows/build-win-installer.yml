@@ -97,12 +97,13 @@ jobs:
           name: orange-win-installer
 
       - name: Install
-        shell: bash
+        shell: cmd
         run: |
-          # Install in silent mode. Output has to be piped somewhere so the installer
-          # runs 'attached' to the console.
-          ls -l ./
-          ./Orange3*.exe /S '/D=C:\test-install' > /dev/null
+          rem # Install in silent mode. Output has to be piped somewhere so the installer
+          rem # runs 'attached' to the console.
+          for %%s in ( Orange3*.exe ) do ( set "INSTALLER=%%s" )
+          echo INSTALLER = %INSTALLER%
+          %INSTALLER% /S /D=C:\test-install > nul
       - name: Run tests
         shell: bash
         run: |
