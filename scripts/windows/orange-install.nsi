@@ -9,7 +9,7 @@
 #  - APPNAME Application (short) name
 #  - VER{MAJOR,MINOR,MICRO} Application version
 #  - PYINSTALLER basename of the python installer
-#  - INSTALL_REGISTRY_KEY reg subkey name to use for storing install infomation
+#  - INSTALL_REGISTRY_KEY reg subkey name to use for storing install information
 #       (details will be stored under Software/${INSTALL_REGISTRY_KEY})
 
 
@@ -577,13 +577,13 @@ Section -Launchers
     # Startup shortcut
     CreateShortCut \
         "$InstDir\${LAUNCHER_SHORTCUT_NAME}.lnk" \
-        "$PythonExecPrefix\pythonw.exe" "-Psm Orange.canvas" \
+        "$PythonExecPrefix\pythonw.exe" "-Psm ${LAUNCHERMODULE}" \
         "$PythonPrefix\share\orange3\icons\orange.ico" 0
     # Utility shortcut to launch the application with max log level attached
     # to the console that remains visible after exit
     CreateShortCut \
         "$InstDir\${LAUNCHER_SHORTCUT_NAME} Debug.lnk" \
-        "%COMSPEC%" '/K "$PythonExecPrefix\python.exe" -Psm Orange.canvas -l4' \
+        "%COMSPEC%" '/K "$PythonExecPrefix\python.exe" -Psm ${LAUNCHERMODULE} -l4' \
         "$PythonPrefix\share\orange3\icons\orange.ico" 0
 !if ${PYINSTALL_TYPE} == Normal
     # A utility shortcut for activating the environment
@@ -617,7 +617,7 @@ Section "Start Menu Shortcuts" SectionStartMenu
         CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
         CreateShortCut \
             "$SMPROGRAMS\$StartMenuFolder\${LAUNCHER_SHORTCUT_NAME}.lnk" \
-            "$PythonExecPrefix\pythonw.exe" "-Psm Orange.canvas" \
+            "$PythonExecPrefix\pythonw.exe" "-Psm ${LAUNCHERMODULE}" \
             "$PythonPrefix\share\orange3\icons\orange.ico" 0
 !if ${PYINSTALL_TYPE} == Normal
         # A utility shortcut for activating the environment
@@ -642,7 +642,7 @@ Section "Desktop Shortcuts" SectionDesktop
     DetailPrint "Installing Desktop shortcurt"
     CreateShortCut \
         "$DESKTOP\${LAUNCHER_SHORTCUT_NAME}.lnk" \
-        "$PythonExecPrefix\pythonw.exe" "-Psm Orange.canvas" \
+        "$PythonExecPrefix\pythonw.exe" "-Psm ${LAUNCHERMODULE}" \
         "$PythonPrefix\share\orange3\icons\orange.ico" 0
 SectionEnd
 
@@ -699,7 +699,7 @@ Section -Register SectionRegister
         "$PythonPrefix\share\orange3\icons\OrangeOWS.ico"
     WriteRegStr SHELL_CONTEXT \
         "Software\Classes\OrangeCanvas\Shell\Open\Command\" "" \
-        '"$PythonExecPrefix\pythonw.exe" -Psm Orange.canvas "%1"'
+        '"$PythonExecPrefix\pythonw.exe" -Psm ${LAUNCHERMODULE} "%1"'
 
     WriteUninstaller "$InstDir\${UNINSTALL_EXEFILE}"
 
@@ -770,7 +770,7 @@ Function un.Register
 FunctionEnd
 
 Function LaunchApplication
-    ExecShell "open" "$PythonExecPrefix\pythonw.exe" "-Psm Orange.canvas"
+    ExecShell "open" "$PythonExecPrefix\pythonw.exe" "-Psm ${LAUNCHERMODULE}"
 FunctionEnd
 
 

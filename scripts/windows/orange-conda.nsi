@@ -9,7 +9,7 @@
 #  - APPNAME Application (short) name
 #  - VER{MAJOR,MINOR,MICRO} Application version
 #  - PYINSTALLER basename of the Miniconda python installer
-#  - INSTALL_REGISTRY_KEY reg subkey name to use for storing install infomation
+# - INSTALL_REGISTRY_KEY reg subkey name to use for storing install information
 #       (details will be stored under Software/${INSTALL_REGISTRY_KEY})
 
 

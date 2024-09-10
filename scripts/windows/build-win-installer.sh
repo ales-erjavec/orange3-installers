@@ -19,6 +19,12 @@ Options:
                             (default dist)
     --cache-dir DIR         Cache downloaded packages in DIR
                             (default is "build/download-cache")
+    -N --application-name   Application name
+    -V --application-version   The application version
+    --icon  <path>          Installer icon (.ico format)
+    -R --reg-key <key>      Required. Key used to register the application in
+                            the windows registry.
+    --launcher-module       The application launcher module (main entry point).
     --python-version        Python version: Major.Minor.Micro
                             The python installer version from python.org
                             bundled into the installer.
@@ -45,8 +51,9 @@ Examples:
 '
 }
 
-NAME=Orange3
-# version is determined at the end when all packages are available
+# The application name
+NAME=
+# The application version
 VERSION=
 
 BUILDBASE=
@@ -56,10 +63,35 @@ PIP_INDEX_ARGS=()
 PIP_ARGS=()
 
 PYTHON_VERSION=
-PLATTAG=
+PLATTAG=win_amd64
 
 while [[ "${1:0:1}" = "-" ]]; do
-    case $1 in
+    case "${1}" in
+        -N|--application-name)
+            NAME=${2:?}; shift 2;;
+        --application-name=*)
+            NAME=${1*=}; shift 1;;
+
+        -V|--application-version)
+            VERSION=${2:?}; shift 2;;
+        --application-version=*)
+            VERSION=${1*=}; shift 1;;
+
+        --launcher-module)
+            APPLICATION_MAIN=${2:?}; shift 2;;
+        --launcher-module=*)
+            APPLICATION_MAIN=${1#*=}; shift 1;;
+
+        --icon)
+            INSTALLER_ICON=${2:?}; shift 2;;
+        --icon=*)
+            INSTALLER_ICON=${1*=}; shift 1;;
+
+        --reg-key)
+            REG_KEY=${2:?}; shift 2;;
+        --reg-key=*)
+            REG_KEY=${1#*=}; shift 1;;
+
         -b|--build-base)
             BUILDBASE=${2:?}; shift 2;;
         --build-base=*)
@@ -104,6 +136,16 @@ while [[ "${1:0:1}" = "-" ]]; do
      esac
 done
 
+if [[ ! ${NAME} ]]; then
+    echo "--application-name must be provided" >&2
+    exit 1
+fi
+
+if [[ ! ${VERSION} ]]; then
+    echo "--application-version must be provided" >&2
+    exit 1
+fi
+
 if [[ ! ${PYTHON_VERSION} =~ ^([0-9]+\.){2,}[0-9]+$ ]]; then
     echo "Invalid python version: $PYTHON_VERSION (need major.minor.micro)" >&2
     exit 1
@@ -139,8 +181,10 @@ fi
 # BASEDIR/
 #   wheelhouse/
 #   requirements.txt
+#   icons/
 
 mkdir -p "${BASEDIR:?}"/wheelhouse
+mkdir -p "${BASEDIR:?}"/icons
 
 mkdir -p "${CACHEDIR:?}"/wheelhouse
 mkdir -p "${CACHEDIR:?}"/python
@@ -260,8 +304,8 @@ package-requirements() {
         ls -1 *.whl
     ) >> "${BASEDIR:?}/requirements.txt"
 
-    mkdir -p "${BASEDIR:?}/icons"
-    cp "$(dirname "$0")"/{orange.ico,OrangeOWS.ico} "${BASEDIR:?}/icons"
+#    mkdir -p "${BASEDIR:?}/icons"
+#    cp "$(dirname "$0")"/{orange.ico,OrangeOWS.ico} "${BASEDIR:?}/icons"
 }
 
 
@@ -316,6 +360,10 @@ make-installer() {
     local pymajor=$(version-component 1 "${PYTHON_VERSION}")
     local pyminor=$(version-component 2 "${PYTHON_VERSION}")
     local pymicro=$(version-component 3 "${PYTHON_VERSION}")
+    local extransisparams=( )
+    if [[ "${INSTALLER_ICON}" ]]; then
+        extransisparams+=( "-DINSTALLERICON=${INSTALLER_ICON}" )
+    fi
 
     cat <<EOF > "${BASEDIR}"/license.txt
 Acknowledgments and License Agreement
@@ -330,17 +378,19 @@ EOF
     mkdir -p "${DISTDIR}"
 
     makensis -DOUTFILENAME="${outpath}/${filename}" \
-             -DAPPNAME=Orange \
-             -DVERSION=${VERSION} \
+             -DAPPNAME="${NAME:?}" \
+             -DVERSION=${VERSION:?} \
              -DVERMAJOR=${major} -DVERMINOR=${minor} -DVERMICRO=${micro} \
              -DPYMAJOR=${pymajor} -DPYMINOR=${pyminor} -DPYMICRO=${pymicro} \
              -DPYARCH=${PLATTAG} \
              -DPYINSTALL_TYPE=${PYINSTALL_TYPE} \
              -DBASEDIR="${basedir}" \
              -DPYINSTALLER=${pyinstaller} \
-             -DINSTALL_REGISTRY_KEY=OrangeCanvas \
-             -DINSTALLERICON="$(win-path "${scriptdir}")/Orange.ico" \
+             -DINSTALL_REGISTRY_KEY=${REG_KEY:?} \
+             -DINSTALLERICON="$(win-path "${scriptdir}")/${NAME}.ico" \
              -DLICENSE_FILE="${BASEDIR}"/license.txt \
+             -DLAUNCHERMODULE="${APPLICATION_MAIN:?}" \
+             "${extransisparams[@]}" \
              -NOCD \
              -V4 \
              "-X!addincludedir $(win-path "${scriptdir}")" \
@@ -353,20 +403,7 @@ fetch-python ${PYTHON_VERSION} ${PLATTAG} "${CACHEDIR:?}"/python
 fetch-requirements "${PIP_ARGS[@]}"
 package-requirements "${PIP_ARGS[@]}"
 
-shopt -s failglob
-WHEEL=( "${BASEDIR}"/wheelhouse/${NAME}*.whl )
-shopt -u failglob
-
-if [[ ! "${WHEEL}" ]]; then
-    echo "Error: ${NAME} missing from the environment specification" >&2
-    exit 1
-fi
-
-VERSION=$(wheel-version "${WHEEL:?}")
-
-if [[ ! ${VERSION} ]]; then
-    echo "ERROR: Could not determine version string" >&2
-    exit 1
-fi
+# move icons in place
+cp "${DIRNAME}"/{"${NAME}.ico","${NAME}OWS.ico"} "${BASEDIR:?}/icons"
 
 make-installer
