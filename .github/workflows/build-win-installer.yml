@@ -78,7 +78,7 @@ jobs:
         run: |
           echo PATH=$PATH
           mkdir dist
-          ./scripts/windows/build-win-installer.sh  --no-index --find-links=./wheels  --python-version $PYTHON_VERSION --platform $PLATTAG --pip-arg=--pre --pip-arg=-r --pip-arg=$ENVSPEC --pip-arg=Orange3
+          ./scripts/windows/build-win-installer.sh  --no-index --find-links=./wheels  -N Orange3 -V 3.44.4 --main-entry Orange.canvas --reg-key OrangeCanvas --python-version $PYTHON_VERSION --platform $PLATTAG --pip-arg=--pre --pip-arg=-r --pip-arg=$ENVSPEC --pip-arg=Orange3
 
           INSTALLER=( dist/Orange3*.exe )
           SHA256=$( sha256sum -b $INSTALLER )
