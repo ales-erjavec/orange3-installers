@@ -191,14 +191,14 @@ if [[ -d "${BASEDIR:?}" ]]; then
 fi
 
 # BASEDIR/
-#   wheelhouse/
+#   wheels/
 #   requirements.txt
 #   icons/
 
-mkdir -p "${BASEDIR:?}"/wheelhouse
+mkdir -p "${BASEDIR:?}"/wheels
 mkdir -p "${BASEDIR:?}"/icons
 
-mkdir -p "${CACHEDIR:?}"/wheelhouse
+mkdir -p "${CACHEDIR:?}"/wheels
 mkdir -p "${CACHEDIR:?}"/python
 
 
@@ -280,7 +280,7 @@ fetch-python() {
 fetch-requirements() {
     # Download binary packages for the specified platform (all packages
     # must be available as .whl files)
-    local wheeldir="${CACHEDIR}/wheelhouse"
+    local wheeldir="${CACHEDIR}/wheels"
     pip download \
         "${PIP_INDEX_ARGS[@]}" \
         --dest "${wheeldir}" \
@@ -292,18 +292,18 @@ fetch-requirements() {
         "$@"
 }
 
-# Package install requirements in "${BASEDIR}/wheelhouse".
-# All the requirements MUST have the .whl cached in ${CACHEDIR}/wheelhouse
+# Package install requirements in "${BASEDIR}/wheels".
+# All the requirements MUST have the .whl cached in ${CACHEDIR}/wheels
 
 package-requirements() {
     local pyfilename=$(python-installer-filename ${PYTHON_VERSION} ${PLATTAG})
     cp "${CACHEDIR:?}/python/${pyfilename:?}" \
        "${BASEDIR:?}/"
-    local wheeldir="${CACHEDIR:?}/wheelhouse"
+    local wheeldir="${CACHEDIR:?}/wheels"
     pip download \
         --no-index \
         --find-links "${wheeldir}" \
-        --dest "${BASEDIR:?}/wheelhouse" \
+        --dest "${BASEDIR:?}/wheels" \
         --only-binary :all: \
         --python-version "${PYTAG}" \
         --platform  "${PLATTAG}" \
@@ -312,7 +312,7 @@ package-requirements() {
 
     echo "# Env spec " > "${BASEDIR:?}"/requirements.txt
     (
-        cd "${BASEDIR:?}/wheelhouse"
+        cd "${BASEDIR:?}/wheels"
         ls -1 *.whl
     ) >> "${BASEDIR:?}/requirements.txt"
 

@@ -18,7 +18,7 @@
 # use -NOCD parameter when invoking makensis to preserve invoker cwd)
 
 # ${BASEDIR}/
-#   wheelhouse/
+#   wheels/
 #   requirements.txt
 #   icons/
 
@@ -536,7 +536,7 @@ Section "Install required packages" InstallPackages
         Abort "No python executable configured. Cannot proceed."
     ${EndIf}
     ${ExtractTemp} "${BASEDIR}\requirements.txt" "${TEMPDIR}"
-    ${ExtractTempRec} "${BASEDIR}\wheelhouse\*.*" "${TEMPDIR}\wheelhouse"
+    ${ExtractTempRec} "${BASEDIR}\wheels\*.*" "${TEMPDIR}\wheels"
 
     # Install into PythonPrefix
     ${LogWrite} "Installing packages into $PythonPrefix"
@@ -546,7 +546,7 @@ Section "Install required packages" InstallPackages
     ${ExecToLog} '\
         "$PythonExecPrefix\python" -m pip install --upgrade \
              --isolated --no-cache-dir --no-index \
-             --find-links "${TEMPDIR}\wheelhouse" \
+             --find-links "${TEMPDIR}\wheels" \
              pip>=9 \
             '
     Pop $0
@@ -558,7 +558,7 @@ Section "Install required packages" InstallPackages
     ${ExecToLog} '\
         "$PythonExecPrefix\python" -m pip install \
              --isolated --no-cache-dir --no-index \
-             --find-links "${TEMPDIR}\wheelhouse" \
+             --find-links "${TEMPDIR}\wheels" \
              -r "${TEMPDIR}\requirements.txt" \
         '
     Pop $0
