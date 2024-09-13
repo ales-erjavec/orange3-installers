@@ -22,13 +22,17 @@ Options:
     -N --application-name   Application name
     -V --application-version   The application version
     --icon  <path>          Installer icon (.ico format)
+    --home-page <url>       Application home page url. Used for final
+                            installer page link and "more info" in the
+                            windows Add/Remove Programs list.
     -R --reg-key <key>      Required. Key used to register the application in
                             the windows registry.
-    --launcher-module       The application launcher module (main entry point).
+    --main-entry <name>     The main entry point. The application is started
+                            as "python -m <name>"
     --python-version        Python version: Major.Minor.Micro
                             The python installer version from python.org
                             bundled into the installer.
-    --platform              win32 or win_amd64
+    --platform <plattag>    win32 or win_amd64
     -f --find-links  <url>  Index option passed to pip to download wheels
                             (see pip download --help)
     --extra-index-url <url> Index option passed to pip to download wheels
@@ -77,9 +81,9 @@ while [[ "${1:0:1}" = "-" ]]; do
         --application-version=*)
             VERSION=${1*=}; shift 1;;
 
-        --launcher-module)
+        --main-entry)
             APPLICATION_MAIN=${2:?}; shift 2;;
-        --launcher-module=*)
+        --main-entry=*)
             APPLICATION_MAIN=${1#*=}; shift 1;;
 
         --icon)
@@ -144,6 +148,14 @@ fi
 if [[ ! ${VERSION} ]]; then
     echo "--application-version must be provided" >&2
     exit 1
+fi
+
+if [[ ! ${REG_KEY} ]]; then
+    echo "--reg-key is a required argument" >&2; exit 1
+fi
+
+if [[ ! ${APPLICATION_MAIN} ]]; then
+    echo "--main-entry is a required argument" >&2; exit 1
 fi
 
 if [[ ! ${PYTHON_VERSION} =~ ^([0-9]+\.){2,}[0-9]+$ ]]; then
