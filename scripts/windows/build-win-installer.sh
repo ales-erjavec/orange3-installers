@@ -191,6 +191,7 @@ if [[ -d "${BASEDIR:?}" ]]; then
 fi
 
 # BASEDIR/
+#   Python/
 #   wheels/
 #   requirements.txt
 #   icons/
@@ -251,6 +252,25 @@ python-installer-filename(){
     echo ${filename}
 }
 
+function download {
+    # $ download URL DEST
+    #
+    # Download the URL to DEST path/filename. If DEST already exists
+    # do nothing.
+    local url=${1:?}
+    local dest=${2:?}
+    local tmpname=""
+    mkdir -p $(dirname "${dest}")
+    if [[ ! -f "${dest}" ]]; then
+        tmpname=$(mktemp "${dest}.XXXXX")
+        if curl -fSL -o "${tmpname}" "${url}"; then
+            mv "${tmpname}" "${dest}"
+        else
+            return $?
+        fi
+    fi
+}
+
 fetch-python() {
     # $ fetch-python major.minor.micro plattag [ dest ]
     #
@@ -264,17 +284,14 @@ fetch-python() {
     if [[ ! ${filename} ]]; then
         return 1
     fi
+    download "https://www.python.org/ftp/python/${version}/${filename}" "${dest}/${filename}"
+}
 
-    dest="${dest}/${filename}"
-    if [[ ! -f "${dest}" ]]; then
-        local tmpname=$(mktemp "${dest}.XXXXX")
-        if curl -s -f -L -o "${tmpname}" \
-               https://www.python.org/ftp/python/${version}/${filename}; then
-            mv "${tmpname}" "${dest}"
-        else
-            return $?
-        fi
-    fi
+fetch-python-nupkg() {
+    # $ fetch-python-nupkg major.minor.micro dest
+    local version=${1:?}
+    local dest=${2:?}
+    download https://www.nuget.org/api/v2/package/python/${version} "${dest}"
 }
 
 fetch-requirements() {
@@ -296,9 +313,6 @@ fetch-requirements() {
 # All the requirements MUST have the .whl cached in ${CACHEDIR}/wheels
 
 package-requirements() {
-    local pyfilename=$(python-installer-filename ${PYTHON_VERSION} ${PLATTAG})
-    cp "${CACHEDIR:?}/python/${pyfilename:?}" \
-       "${BASEDIR:?}/"
     local wheeldir="${CACHEDIR:?}/wheels"
     pip download \
         --no-index \
@@ -356,14 +370,14 @@ wheel-version() {
     wheel-metadata "${1:?}" | grep -E "^Version: " | cut -d " " -f 2
 }
 
-PYINSTALL_TYPE=Normal
+PYINSTALL_TYPE=Private
 
 make-installer() {
     local scriptdir="$(dirname "$0")"
     local nsis_script="${scriptdir:?}/orange-install.nsi"
     local outpath=${DISTDIR}
     local filename=${NAME}-${VERSION}-Python${PYTAG:?}-${PLATTAG:?}.exe
-    local pyinstaller=$(python-installer-filename ${PYTHON_VERSION} ${PLATTAG})
+    local pyinstaller="Python"
     local basedir=$(win-path "${BASEDIR:?}")
     local versionstr=${VERSION}
     local major=$(version-component 1 "${versionstr}")
@@ -411,7 +425,12 @@ EOF
 
 DIRNAME=$(dirname "${0}")
 
-fetch-python ${PYTHON_VERSION} ${PLATTAG} "${CACHEDIR:?}"/python
+fetch-python-nupkg ${PYTHON_VERSION} "${CACHEDIR:?}"/python-${PYTHON_VERSION}
+
+7z x '-i!tools' -y -o"${BUILDBASE}/python" "${CACHEDIR:?}"/python-${PYTHON_VERSION}
+mv "${BUILDBASE}/python/tools" "${BASEDIR}/Python"
+rm -r "${BUILDBASE}/python"
+
 fetch-requirements "${PIP_ARGS[@]}"
 package-requirements "${PIP_ARGS[@]}"
 

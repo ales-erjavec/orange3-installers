@@ -413,16 +413,9 @@ Section "-Python ${PYTHON_VERSION} (${BITS} bit)" SectionPython
         Abort "Invalid installation prefix"
     ${EndIf}
     ${LogWrite} "Installing a private python installation"
-    ${ExtractTemp} "${BASEDIR}\${PYINSTALLER}" "${TEMPDIR}"
     DetailPrint 'Installing a private Python ${PYTHON_VERSION} (${BITS} bit) \
                  in "$InstDir\Python${PYTAG}-${BITS}"'
-
-    ${PyInstallNoRegister} "${TEMPDIR}\${PYINSTALLER}" \
-                           "$InstDir\Python${PYTAG}-${BITS}" $0
-    # msvcredist?
-    ${If} $0 != 0
-        Abort "Python installation failed (error value: $0)"
-    ${EndIf}
+    ${ExtractTempRec} "${BASEDIR}\Python\*.*" $InstDir\Python${PYTAG}-${BITS}
     ${IfNot} ${FileExists} "$InstDir\Python${PYTAG}-${BITS}\python.exe"
         ${LogWrite} "Failed to install Python in $InstDir$\r$\n\
                      Python executable not found in: \
