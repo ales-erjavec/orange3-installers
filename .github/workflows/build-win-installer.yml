@@ -78,9 +78,14 @@ jobs:
         run: |
           echo PATH=$PATH
           mkdir dist
-          ./scripts/windows/build-win-installer.sh  --no-index --find-links=./wheels  -N Orange3 -V 3.44.4 --main-entry Orange.canvas --reg-key OrangeCanvas --python-version $PYTHON_VERSION --platform $PLATTAG --pip-arg=--pre --pip-arg=-r --pip-arg=$ENVSPEC --pip-arg=Orange3
+          ./scripts/windows/build-win-installer.sh  \
+               --no-index --find-links=./wheels \
+               --application-name Orange --application-version 3.44.4 \
+               --main-entry Orange.canvas --reg-key OrangeCanvas \
+               --python-version $PYTHON_VERSION --platform $PLATTAG \
+               --pip-arg=--pre --pip-arg=-r --pip-arg=$ENVSPEC --pip-arg=Orange3
 
-          INSTALLER=( dist/Orange3*.exe )
+          INSTALLER=( dist/Orange-*.exe )
           SHA256=$( sha256sum -b $INSTALLER )
           echo INSTALLER = $INSTALLER
           echo SHA256 = $( sha256sum -b $INSTALLER )
@@ -89,7 +94,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: orange-win-installer
-          path: dist/Orange3-*.exe
+          path: dist/Orange-*.exe
           if-no-files-found: error
 
   test:
@@ -107,13 +112,13 @@ jobs:
         run: |
           rem # Install in silent mode. Output has to be piped somewhere so the installer
           rem # runs 'attached' to the console.
-          for %%s in ( Orange3*.exe ) do ( set "INSTALLER=%%s" )
+          for %%s in ( Orange-*.exe ) do ( set "INSTALLER=%%s" )
           echo INSTALLER = %INSTALLER%
           %INSTALLER% /S /D=D:\test-install > nul
       - name: Run tests
         shell: bash
         run: |
-          PYTHON=$(cygpath -u 'D:\test-install\Scripts\python')
+          PYTHON=$(cygpath -u 'D:\test-install\Python311-64\python')
           $PYTHON --version
           $PYTHON -m pip --version
           $PYTHON -m pip list --format=freeze
