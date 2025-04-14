@@ -378,7 +378,7 @@ package-requirements "${PIP_ARGS[@]}"
 cp "${DIRNAME}"/{"Orange.ico","OrangeOWS.ico"} "${BASEDIR:?}/icons"
 
 shopt -s failglob
-WHEEL=( "${BASEDIR}"/wheels/${NAME}*.whl )
+WHEEL=( "${BASEDIR}"/wheels/orange3*.whl )
 shopt -u failglob
 
 if [[ ! "${WHEEL}" ]]; then
