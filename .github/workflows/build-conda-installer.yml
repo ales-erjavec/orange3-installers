@@ -146,21 +146,21 @@ jobs:
           echo INSTALLER = %INSTALLER%
           %INSTALLER% /S /D=%INSTALL_PATH% > nul
       - name: Run tests
-        shell: bash
+        shell: cmd
         run: |
-          PYTHON=$(cygpath -u "$INSTALL_PATH"'\\python')
-          "$PYTHON" --version
-          "$PYTHON" -m pip --version
-          "$PYTHON" -m pip list --format=freeze
-          # Test that orange and all dependencies are installed in a
-          # consistent state
-          #$PYTHON -m pip install --no-index --no-cache-dir orange3
+          set "PYTHON=%INSTALL_PATH%\python"
+          "%PYTHON%" --version
+          "%PYTHON%" -m pip --version
+          "%PYTHON%" -m pip list --format=freeze
+          rem # Test that orange and all dependencies are installed in a
+          rem # consistent state
+          rem #%PYTHON% -m pip install --no-index --no-cache-dir orange3
 
-          # Run test suite in the installed environment.
-          export ORANGE_DEPRECATIONS_ERROR=1
-          export PYTHONWARNINGS=module
+          rem # Run test suite in the installed environment.
+          set ORANGE_DEPRECATIONS_ERROR=1
+          set PYTHONWARNINGS=module
 
-          "$PYTHON" -m unittest -v Orange.tests Orange.widgets.tests
+          "%PYTHON%" -m unittest -v Orange.tests Orange.widgets.tests
 
       - name: Test conda
         shell: cmd
