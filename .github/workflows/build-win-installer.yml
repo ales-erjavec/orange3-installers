@@ -100,6 +100,8 @@ jobs:
     name: Test
     needs: build
     runs-on: windows-2019
+    env:
+      INSTALL_PATH: "D:\\install path čšž"
     steps:
       - name: Download installer
         uses: actions/download-artifact@v4
@@ -113,20 +115,28 @@ jobs:
           rem # runs 'attached' to the console.
           for %%s in ( Orange3*.exe ) do ( set "INSTALLER=%%s" )
           echo INSTALLER = %INSTALLER%
-          %INSTALLER% /S /D=D:\test-install > nul
+          %INSTALLER% /S /D=%INSTALL_PATH% > nul
       - name: Run tests
         shell: bash
         run: |
-          PYTHON=$(cygpath -u 'D:\test-install\python')
-          $PYTHON --version
-          $PYTHON -m pip --version
-          $PYTHON -m pip list --format=freeze
+          PYTHON=$(cygpath -u "$INSTALL_PATH"'\\python')
+          "$PYTHON" --version
+          "$PYTHON" -m pip --version
+          "$PYTHON" -m pip list --format=freeze
           # Test that orange and all dependencies are installed in a
           # consistent state
-          $PYTHON -m pip install --no-index --no-cache-dir orange3
+          "$PYTHON" -m pip install --no-index --no-cache-dir orange3
 
           # Run test suite in the installed environment.
           export ORANGE_DEPRECATIONS_ERROR=1
           export PYTHONWARNINGS=module
 
-          $PYTHON -m unittest -v Orange.tests Orange.widgets.tests
+          "$PYTHON" -m unittest -v Orange.tests Orange.widgets.tests
+
+      - name: Test env
+        shell: cmd
+        run: |
+          "%INSTALL_PATH%"\Scripts\activate
+          python --version
+          pip --version
+          where python
