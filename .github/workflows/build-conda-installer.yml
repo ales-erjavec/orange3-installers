@@ -14,10 +14,10 @@ jobs:
     runs-on:  windows-2022
     timeout-minutes: 60
     env:
-      REPO: https://github.com/biolab/orange3.git
-      BUILD_BRANCH: master
-      BUILD_COMMIT: "3.40.0"
-      BUILD_LOCAL: ""
+      REPO: https://github.com/ales-erjavec/orange3.git
+      BUILD_BRANCH: conda-pyqt6
+      BUILD_COMMIT: conda-pyqt6
+      BUILD_LOCAL: "1"
 
       PYTHONFAULTHANDLER: 1
       PIP_DISABLE_PIP_VERSION_CHECK: 1
@@ -51,7 +51,7 @@ jobs:
             channels:
               - conda-forge
           environment-name: build
-          create-args: conda conda-build boa python=3.11
+          create-args: conda conda-build boa python=3.12
           init-shell: bash cmd.exe
           generate-run-shell: true
 
