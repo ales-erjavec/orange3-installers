@@ -86,8 +86,8 @@ jobs:
                          pandas=2.2.* \
                          pyqtgraph=0.13.* \
                          bottleneck=1.4.* \
-                         pyqt=5.15.* \
-                         pyqtwebengine=5.15.* \
+                         pyqt6=6.11.* \
+                         pyqt6-webengine=6.11.* \
                          Orange3=$VERSION \
                          openTSNE=1.0.4 \
                          catboost=1.2.8 \
