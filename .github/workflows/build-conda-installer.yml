@@ -61,7 +61,7 @@ jobs:
           set -e
           git clone -q $REPO
           cd orange3
-          git fetch origin $BUILD_BRANCH
+          git fetch --tags origin $BUILD_BRANCH
           git checkout $BUILD_COMMIT
 
       - name: Prepare conda packages
