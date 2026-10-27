@@ -50,7 +50,7 @@ jobs:
             channels:
               - conda-forge
           environment-name: build
-          create-args: conda conda-build boa python=${{ matrix.python-version }}
+          create-args: conda boa
           init-shell: bash cmd.exe
           generate-run-shell: true
 
