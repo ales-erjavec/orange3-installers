@@ -197,7 +197,7 @@ conda-fetch-packages() {
         # list out files by creation date to (sometimes) preserve order
         # that was in specfile (should parse specfile instead)
         shopt -s nullglob
-        ls -1tr *.tar.bz2 *.conda
+        ls -1trN *.tar.bz2 *.conda
     ) >> "${destdir}/conda-spec.txt"
 }
 
@@ -260,6 +260,8 @@ fetch-files() {
                 ;;
         esac
         fname=${url##*/}
+        # special case for url encode of epoch version specifier '!'
+        fname=$(echo "${fname}" | sed 's/%21/!/')
         # cache only if md5 hash is present in url
         if [[ ! ${hash} == "" ]]; then
             if [ ! -f "${cache}/${fname}" ] ||
@@ -277,7 +279,7 @@ fetch-files() {
             fi
             cp "${cache}/${fname}" "${destdir}"
         else
-            ( cd "${destdir}"; curl -fSL -O "${url}" )
+            ( cd "${destdir}"; curl -fSL -o "${fname}" "${url}" )
         fi
     done
 }
