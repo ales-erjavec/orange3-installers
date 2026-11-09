@@ -21,7 +21,6 @@ jobs:
 
       PYTHONFAULTHANDLER: 1
       PIP_DISABLE_PIP_VERSION_CHECK: 1
-      PIP_CACHE_DIR: .pip-cache
       PIP_PREFER_BINARY: 1
       CONDA_BUILD_VERSION: "3.26.*"
       # CONDA_SPEC_FILE: ..\specs\win\conda-spec.txt
@@ -30,7 +29,7 @@ jobs:
       fail-fast: False
       matrix:
         include:
-          - python-version: "3.12"
+          - python-version: "3.13"
             micromamba-version: "2.3.3-0"
 
     defaults:
@@ -38,20 +37,20 @@ jobs:
         shell: bash -l {0}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
 
-      - uses: mamba-org/setup-micromamba@v1
+      - uses: mamba-org/setup-micromamba@v3
         with:
           condarc: >-
             channels:
               - conda-forge
           environment-name: build
-          create-args: conda conda-build boa python=3.11
+          create-args: conda boa
           init-shell: bash cmd.exe
           generate-run-shell: true
 
@@ -81,8 +80,8 @@ jobs:
                          ${EXTRA_ARGS[*]} \
                          python=$PYTHON_VERSION \
                          numpy=2.1.* \
-                         scipy=1.13.* \
-                         scikit-learn=1.5.2 \
+                         scipy=1.16.* \
+                         scikit-learn=1.6.* \
                          pandas=2.2.* \
                          pyqtgraph=0.13.* \
                          bottleneck=1.4.* \
@@ -120,7 +119,7 @@ jobs:
           echo SHA256 = $( sha256sum -b $INSTALLER )
 
       - name: Upload installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: orange-win-conda-installer
           path: dist/Orange3-*.exe
@@ -134,7 +133,7 @@ jobs:
       INSTALL_PATH: "D:\\install path"
     steps:
       - name: Download installer
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: orange-win-conda-installer
 
